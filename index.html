@@ -1,0 +1,202 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Bird</title>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <canvas id="myCanvas" width="800" height="600">
+     </canvas>
+    <div id="mainMenu">
+        <button id='startButton'>Start</button>
+        <p> Press the SPACE button to lift the ball</p>
+<!--        <button id='controlsButton'>Управление</button>-->
+    </div>
+
+    <div id="loseMenu">
+        <div id='score'></div>
+        <button id='restartButton'>Restart</button>
+    </div>
+
+
+    <script src="menu.js"></script>
+    <script>
+        var canvas = document.getElementById('myCanvas');
+        var ctx = canvas.getContext("2d");
+        var keyPressed = false;
+        //        var bars = [];
+        var distance = 100;
+        var score = 0;
+        var ball;
+        var interval;
+
+
+
+
+
+
+        function drawScore() {
+            ctx.font = "48px serif";
+            ctx.fillStyle = 'white';
+            ctx.textAlign = "center";
+            ctx.fillText(score, canvas.width / 2, 150);
+            scoreTable.innerHTML = "Your score is " + score;
+
+        };
+
+
+
+
+
+        function startGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            interval = setInterval(draw, 10);
+            score = 0;
+            bars = [];
+            ball = new Ball();
+            bars.push(new Bar());
+        document.addEventListener('keydown', keydownHandler, false);
+        };
+
+        function gameOver() {
+            clearInterval(interval);
+            loseScreen.style.display = 'block';
+ document.removeEventListener('keydown', keydownHandler, false);
+        };
+
+
+
+
+        class Ball {
+            constructor() {
+                this.x = 150;
+                this.y = canvas.height / 2 - 10;
+                this.radius = 20;
+                this.gravity = 0.1;
+                this.velocity = 0;
+            }
+            show() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                ctx.closePath();
+            }
+            update() {
+                this.velocity += this.gravity;
+                this.y += this.velocity;
+                if (this.y - this.velocity + this.radius >= canvas.height) {
+                    this.y = this.velocity + canvas.height - this.radius;
+                    this.velocity = 0;
+                    gameOver();
+                }
+
+                if (this.y - this.radius - this.velocity < 0) {
+                    this.y = this.radius + this.velocity;
+                    this.velocity = 0;
+                    gameOver();
+                }
+
+            }
+            up() {
+                this.velocity -= this.gravity + 5;
+
+            }
+        }
+
+
+        class Bar {
+            constructor() {
+                this.width = 40;
+                this.x = canvas.width - this.width;
+                this.dx = -2;
+                this.heightTop = getRandom(0, canvas.height - distance);
+                this.heightBottom = canvas.height - this.heightTop - distance;
+            }
+
+            show() {
+                ctx.beginPath();
+                ctx.rect(this.x, 0, this.width, this.heightTop);
+                ctx.rect(this.x, canvas.height - this.heightBottom, this.width, this.heightBottom);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                ctx.closePath();
+
+            }
+
+            update() {
+                this.x += this.dx;
+            }
+
+            collided(ball) {
+                if (ball.x + ball.radius > this.x - this.dx && ball.x < this.x + this.width  - this.dx) {
+                    if (ball.y - ball.velocity - ball.radius < this.heightTop || ball.y + ball.velocity + ball.radius - ball.velocity > canvas.height - this.heightBottom) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+
+            }
+
+        }
+
+
+
+
+
+        function keydownHandler(event) {
+            if (event.keyCode == 32) {
+                ball.up();
+            }
+        }
+
+
+
+        function getRandom(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawScore();
+            ball.show();
+            ball.update();
+            for (var i = 0; i < bars.length; i++) {
+                bars[i].show();
+                bars[i].update();
+                if (ball.x == bars[i].x + bars[i].width / 2) {
+                    score++;
+                }
+                if (bars[i].collided(ball)) {
+                  
+                    gameOver();
+                }
+
+                if (bars[i].x == canvas.width /2) {
+                    bars.push(new Bar());
+                }
+                if (bars[i].x == -2 * bars[i].width) {
+                    bars.shift();
+
+                }
+            }
+        }
+
+    </script>
+
+
+
+
+
+
+
+</body>
+
+
+</html>
